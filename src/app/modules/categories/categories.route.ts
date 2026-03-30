@@ -2,7 +2,7 @@ import { Router } from "express";
 import { checkAuth } from "../../middleware/checkAuth";
 import { UserRole } from "../user/user.interface";
 import { validateRequest } from "../../middleware/validateRequest";
-import { createCategorySchema } from "./categories.validation";
+import { createCategorySchema, updateCategorySchema } from "./categories.validation";
 import { categoryControllers } from "./categories.controller";
 
 const router = Router();
@@ -28,6 +28,21 @@ router.get(
   categoryControllers.getSingleCategory,
 );
 
+
+
+router.patch(
+  "/:id",
+  checkAuth(UserRole.SUPERADMIN),
+  validateRequest(updateCategorySchema),
+  categoryControllers.updateCategory,
+);
+
+
+router.delete(
+  "/:id",
+  checkAuth(UserRole.SUPERADMIN),
+  categoryControllers.deleteCategory,
+);
 
 
 export const CategoryRoutes = router

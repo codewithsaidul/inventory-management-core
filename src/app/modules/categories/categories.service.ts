@@ -54,9 +54,49 @@ export const categoryServices = {
     const category = await Category.findOne({ slug });
 
     if (!category) {
-        throw new AppError(StatusCodes.NOT_FOUND, "Category Not Found!!")
+      throw new AppError(StatusCodes.NOT_FOUND, "Category Not Found!!");
     }
 
-    return category
-  }
+    return category;
+  },
+
+  updateCategory: async (categoryId: string, payload: Partial<ICategory>) => {
+    const isExist = await Category.findById(categoryId);
+
+    if (!isExist) {
+      throw new AppError(StatusCodes.NOT_FOUND, "Category Not Found!!");
+    }
+
+    if (payload.name) {
+      const uniqueSlug = await slugifyUnique(
+        [payload.name as string],
+        Category,
+        50,
+      );
+
+      payload.slug = uniqueSlug;
+    }
+
+    const updateCategory = await Category.findByIdAndUpdate(
+      categoryId,
+      payload,
+      { new: true, runValidators: true },
+    );
+
+    return updateCategory;
+  },
+
+  deleteCategory: async (categoryId: string) => {
+    const isExist = await Category.findById(categoryId);
+
+    if (!isExist) {
+      throw new AppError(StatusCodes.NOT_FOUND, "Category Not Found!!");
+    }
+
+
+
+    const deleteCategory = await Category.findByIdAndDelete(categoryId);
+
+    return deleteCategory;
+  },
 };

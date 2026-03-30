@@ -4,6 +4,7 @@ import { TNext, TRequest, TResponse } from "../../types/global";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { categoryServices } from "./categories.service";
+import { updateCategorySchema } from "./categories.validation";
 
 export const categoryControllers = {
   createCategory: catchAsync(
@@ -19,7 +20,6 @@ export const categoryControllers = {
     },
   ),
 
-  
   getAllCateogry: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
       const result = await categoryServices.getAllCategory(
@@ -35,7 +35,6 @@ export const categoryControllers = {
     },
   ),
 
-
   getSingleCategory: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
       const result = await categoryServices.getSingleCategory(
@@ -46,6 +45,37 @@ export const categoryControllers = {
         success: true,
         statusCode: StatusCodes.OK,
         message: "Category details retrived successfully!",
+        data: result,
+      });
+    },
+  ),
+
+  updateCategory: catchAsync(
+    async (req: TRequest, res: TResponse, next: TNext) => {
+      const result = await categoryServices.updateCategory(
+        req.params.id as string,
+        req.body,
+      );
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Category updated successfully!",
+        data: result,
+      });
+    },
+  ),
+
+  deleteCategory: catchAsync(
+    async (req: TRequest, res: TResponse, next: TNext) => {
+      const result = await categoryServices.deleteCategory(
+        req.params.id as string,
+      );
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Category deleted successfully!",
         data: result,
       });
     },
