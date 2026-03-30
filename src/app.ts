@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
 import cookieParser from "cookie-parser";
@@ -11,10 +10,7 @@ import { router } from "./app/routes/index.route";
 import { globalErrorHandler } from "./app/middleware/globalErrorHandler";
 import { envVars } from "./app/config/env";
 import { notFound } from "./app/middleware/notFount";
-// import { metricsMiddleware } from "./app/middleware/metricsMiddleware";
-import "./app/config/passport";
-import cron from "node-cron";
-import { BookingService } from "./app/modules/booking/booking.service";
+import "./app/config/passport"
 
 const app: Application = express();
 
@@ -56,18 +52,6 @@ app.use(passport.session());
 
 
 app.set("trust proxy", 1);
-// app.use(metricsMiddleware);
-
-
-// Schedule a task to run every minute
-cron.schedule("* * * * *", () => {
-  try {
-    BookingService.cancelUnpaidExpiredBookings();
-    console.log("Running a task every minute: Checking for EXPIRED Bookings.");
-  } catch (error) {
-    console.log("🚀 CRON JOB ERROR:", error);
-  }
-})
 
 
 app.use("/api/v1", router);
@@ -75,13 +59,13 @@ app.use("/api/v1", router);
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
-    message: "Welcome to The Biggest Ticketing System Server - TicketFlow!",
+    message: "Welcome to Inventory Management Server!",
     version: "1.0.0",
     status: "Running",
   });
 });
 
-// 7. Error Handling (সবার শেষে)
+
 app.use(globalErrorHandler);
 app.use(notFound);
 

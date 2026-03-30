@@ -1,13 +1,11 @@
 /* eslint-disable no-console */
 import http from "http";
 import mongoose from "mongoose";
-import { Server as SocketIoServer } from "socket.io";
 import app from "./app";
 import { envVars } from "./app/config/env";
 import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
 
 let server: http.Server;
-export let io: SocketIoServer;
 const port = envVars.PORT;
 
 const startServer = async () => {
@@ -15,46 +13,13 @@ const startServer = async () => {
     await mongoose.connect(`${envVars.DATABASE_URL}`);
     console.log("✅ MongoDB Connected Successfully");
 
-    // await connectRedis();
-    // console.log("✅ Redis Connected Successfully");
-
     await seedSuperAdmin();
 
     server = http.createServer(app);
 
-    io = new SocketIoServer(server, {
-      cors: {
-        origin: [envVars.FRONTEND_URL, envVars.LOCAL_FRONTEND_URL],
-        methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
-      },
-    });
-
-    io.on("connection", (socket) => {
-      console.log(`🔌 User connected: ${socket.id}`);
-
-      socket.on("join_ticket_room", (ticketId) => {
-        socket.join(ticketId);
-        console.log(`User ${socket.id} joined room: ${ticketId}`);
-      });
-
-      socket.on("client-locking-seat", (data) => {
-        // সাথে সাথে ওই ইভেন্ট রুমের সবাইকে জানিয়ে দেওয়া (ডাটাবেস আপডেট ছাড়াই)
-        socket.to(data.eventId).emit("seat-optimistic-lock", {
-          seatIds: data.seatIds,
-          lockerId: data.userId,
-        });
-      });
-
-      socket.on("disconnect", () => {
-        console.log(`❌ User disconnected: ${socket.id}`);
-      });
-    });
-
     server.listen(port, () => {
       console.log(
-        `🚀 Biggest Ever Ticketing System - TicketFlow Server running on port ${port}`
+        `🚀 Inventory Management Server running on port ${port}`
       );
     });
   } catch (error) {

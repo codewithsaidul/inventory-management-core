@@ -14,6 +14,9 @@ export const seedSuperAdmin = async () => {
       return null;
     }
 
+      console.log("🚀 ~ seedSuperAdmin ~ process.env.SUPER_ADMIN_PASSWORD:", process.env.SUPER_ADMIN_PASSWORD)
+
+
     const hashPassword = await bcrypt.hash(
       process.env.SUPER_ADMIN_PASSWORD as string,
       parseInt(envVars.BCRYPT_SALT_ROUND as string)
@@ -26,12 +29,9 @@ export const seedSuperAdmin = async () => {
 
 
     const superAdminInfo: IUser = {
-        name: "TicketFlow - Super Admin",
+        name: "Inventory Management - Super Admin",
         email: envVars.SUPER_ADMIN_EMAIL,
         password: hashPassword,
-        bio: "I am the super admin of TicketFlow.",
-        interests: ["Management", "Technology", "Events"],
-        location: "Headquarters",
         role: UserRole.SUPERADMIN,
         status: UserStatus.ACTIVE,
         providers: [authProvider],
