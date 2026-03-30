@@ -3,57 +3,56 @@ import { StatusCodes } from "http-status-codes";
 import { TNext, TRequest, TResponse } from "../../types/global";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
-import { categoryServices } from "./categories.service";
-import { updateCategorySchema } from "./categories.validation";
+import { productServices } from "./products.service";
 
-export const categoryControllers = {
-  createCategory: catchAsync(
+export const productControllers = {
+  createProduct: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const result = await categoryServices.createCategory(req.body);
+      const result = await productServices.createProduct(req.body);
 
       sendResponse(res, {
         success: true,
         statusCode: StatusCodes.CREATED,
-        message: "Category created successfully!",
+        message: "Product created successfully!",
         data: result,
       });
     },
   ),
 
-  getAllCateogry: catchAsync(
+  getAllProduct: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const { data, meta } = await categoryServices.getAllCategory(
+      const { data, meta } = await productServices.getAllProducts(
         req.query as Record<string, string>,
       );
 
       sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,
-        message: "All Category retrived successfully!",
+        message: "All Product retrived successfully!",
         data,
         meta,
       });
     },
   ),
 
-  getSingleCategory: catchAsync(
+  getProductDetails: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const result = await categoryServices.getSingleCategory(
+      const result = await productServices.getProductDetails(
         req.params.slug as string,
       );
 
       sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,
-        message: "Category details retrived successfully!",
+        message: "Product details retrived successfully!",
         data: result,
       });
     },
   ),
 
-  updateCategory: catchAsync(
+  updateProduct: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const result = await categoryServices.updateCategory(
+      const result = await productServices.updateProduct(
         req.params.id as string,
         req.body,
       );
@@ -61,22 +60,22 @@ export const categoryControllers = {
       sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,
-        message: "Category updated successfully!",
+        message: "Product updated successfully!",
         data: result,
       });
     },
   ),
 
-  deleteCategory: catchAsync(
+  deleteProduct: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const result = await categoryServices.deleteCategory(
+      const result = await productServices.deleteProduct(
         req.params.id as string,
       );
 
       sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,
-        message: "Category deleted successfully!",
+        message: "Product deleted successfully!",
         data: result,
       });
     },

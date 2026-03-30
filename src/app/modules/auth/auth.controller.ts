@@ -34,16 +34,6 @@ export const AuthController = {
     });
   }),
 
-  verifyUser: catchAsync(async (req: TRequest, res: TResponse, next: TNext) => {
-    const message = await AuthServices.verifyUser(req.query.token as string);
-    sendResponse(res, {
-      statusCode: StatusCodes.OK,
-      success: true,
-      message: message,
-      data: null,
-    });
-  }),
-
   credentialsLogin: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
       passport.authenticate(
