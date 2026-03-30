@@ -49,4 +49,14 @@ export const categoryServices = {
 
     return { data, meta };
   },
+
+  getSingleCategory: async (slug: string) => {
+    const category = await Category.findOne({ slug });
+
+    if (!category) {
+        throw new AppError(StatusCodes.NOT_FOUND, "Category Not Found!!")
+    }
+
+    return category
+  }
 };

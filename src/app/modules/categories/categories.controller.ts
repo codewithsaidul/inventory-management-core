@@ -18,6 +18,8 @@ export const categoryControllers = {
       });
     },
   ),
+
+  
   getAllCateogry: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
       const result = await categoryServices.getAllCategory(
@@ -28,6 +30,22 @@ export const categoryControllers = {
         success: true,
         statusCode: StatusCodes.OK,
         message: "Category retrived successfully!",
+        data: result,
+      });
+    },
+  ),
+
+
+  getSingleCategory: catchAsync(
+    async (req: TRequest, res: TResponse, next: TNext) => {
+      const result = await categoryServices.getSingleCategory(
+        req.params.slug as string,
+      );
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Category details retrived successfully!",
         data: result,
       });
     },
