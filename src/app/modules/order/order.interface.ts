@@ -18,6 +18,16 @@ export interface IOrder {
   items: IOrderItem[];
   totalPrice: number;
   status: OrderStatus;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
+
+
+export interface IOrderFillter {
+  status?: OrderStatus;
+  createdAt?: Date | { $gte: Date; $lte: Date };
+}
+
+
+

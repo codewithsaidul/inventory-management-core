@@ -1,10 +1,12 @@
-import { startSession } from "mongoose";
-import { IOrder } from "./order.interface";
-import { Product } from "../products/product.model";
-import { AppError } from "../../errorHelpers/AppError";
 import { StatusCodes } from "http-status-codes";
+import { startSession } from "mongoose";
+import { AppError } from "../../errorHelpers/AppError";
+import { QueryBuilder } from "../../utils/queryBuilder";
 import { ProductStatus } from "../products/product.interface";
+import { Product } from "../products/product.model";
+import { IOrder, IOrderFillter, OrderStatus } from "./order.interface";
 import { Order } from "./order.model";
+import { isValidStatusTransition } from "./order.statusValidation";
 
 export const orderServices = {
   createOrder: async (payload: IOrder) => {
@@ -82,5 +84,82 @@ export const orderServices = {
     } finally {
       session.endSession();
     }
+  },
+
+  getAllOrders: async (query: Record<string, string>) => {
+    const { date, ...restQuery } = query;
+
+    const initialQuery = Order.find();
+    const filter: IOrderFillter = {};
+
+    if (date) {
+      const start = new Date(date);
+      const end = new Date(date);
+
+      end.setHours(23, 59, 59, 999);
+
+      filter.createdAt = { $gte: start, $lte: end };
+    }
+
+    const queryBuilder = new QueryBuilder(initialQuery.find(filter), restQuery);
+
+    const events = queryBuilder
+      .search(["name"])
+      .filter()
+      .sort()
+      .fields()
+      .paginate()
+      .populate("items.product", "name price");
+
+    const [data, meta] = await Promise.all([
+      events.build(),
+      queryBuilder.getMeta(),
+    ]);
+
+    return { data, meta };
+  },
+
+  updateOrderStatus: async (orderId: string, newStatus: OrderStatus) => {
+    const isOrderExist = await Order.findById(orderId);
+
+    if (!isOrderExist) {
+      throw new AppError(StatusCodes.NOT_FOUND, "This order does not exist");
+    }
+
+    const isValidTransitionsStatus = isValidStatusTransition(
+      isOrderExist.status,
+      newStatus,
+    );
+
+    if (!isValidTransitionsStatus) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        `Invalid status transition from "${isOrderExist.status}" to "${newStatus}"`,
+      );
+    }
+
+    const updatedOrderStatus = await Order.findByIdAndUpdate(
+      orderId,
+      { status: newStatus },
+      { new: true, runValidators: true },
+    );
+
+    return updatedOrderStatus;
+  },
+
+  deleteOrder: async (orderId: string) => {
+    const isOrderExist = await Order.findById(orderId);
+
+    if (!isOrderExist) {
+      throw new AppError(StatusCodes.NOT_FOUND, "This order does not exist");
+    }
+
+    const deletedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { isDeleted: true },
+      { new: true },
+    );
+
+    return deletedOrder;
   },
 };

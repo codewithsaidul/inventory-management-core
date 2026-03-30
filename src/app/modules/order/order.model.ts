@@ -11,6 +11,7 @@ const OrderSchema = new Schema<IOrder>(
     customerName: { type: String, required: true, trim: true },
     items: [OrderItemSchema],
     totalPrice: { type: Number, required: true, default: 0 },
+    isDeleted: { type: Boolean, default: false },
     status: {
       type: String,
       enum: [...Object.values(OrderStatus)],
