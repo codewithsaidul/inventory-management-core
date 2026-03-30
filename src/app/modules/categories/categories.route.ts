@@ -13,6 +13,11 @@ router.post(
   validateRequest(createCategorySchema),
   categoryControllers.createCategory,
 );
+router.get(
+  "/",
+  checkAuth(UserRole.SUPERADMIN),
+  categoryControllers.getAllCateogry,
+);
 
 
 

@@ -3,6 +3,7 @@ import { AppError } from "../../errorHelpers/AppError";
 import { ICategory } from "./categories.interface";
 import { Category } from "./categories.model";
 import { slugifyUnique } from "../../utils/generateSlug";
+import { QueryBuilder } from "../../utils/queryBuilder";
 
 export const categoryServices = {
   createCategory: async (payload: ICategory) => {
@@ -29,5 +30,23 @@ export const categoryServices = {
     const category = await Category.create(categoryData);
 
     return category;
+  },
+
+  getAllCategory: async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(Category.find(), query);
+
+    const events = queryBuilder
+      .search(["name"])
+      .filter()
+      .sort()
+      .fields()
+      .paginate();
+
+    const [data, meta] = await Promise.all([
+      events.build(),
+      queryBuilder.getMeta(),
+    ]);
+
+    return { data, meta };
   },
 };

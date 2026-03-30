@@ -18,4 +18,18 @@ export const categoryControllers = {
       });
     },
   ),
+  getAllCateogry: catchAsync(
+    async (req: TRequest, res: TResponse, next: TNext) => {
+      const result = await categoryServices.getAllCategory(
+        req.query as Record<string, string>,
+      );
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Category retrived successfully!",
+        data: result,
+      });
+    },
+  ),
 };
