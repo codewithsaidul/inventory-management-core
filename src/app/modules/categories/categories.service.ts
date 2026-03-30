@@ -4,10 +4,12 @@ import { ICategory } from "./categories.interface";
 import { Category } from "./categories.model";
 import { slugifyUnique } from "../../utils/generateSlug";
 import { QueryBuilder } from "../../utils/queryBuilder";
+import { categorySearchableField } from "./categories.constant";
 
 export const categoryServices = {
   createCategory: async (payload: ICategory) => {
-    const isExist = await Category.findOne({ name: payload.name });
+    const categoryName = payload.name.trim().toLowerCase();
+    const isExist = await Category.findOne({ name: categoryName });
 
     if (isExist) {
       throw new AppError(
@@ -36,7 +38,7 @@ export const categoryServices = {
     const queryBuilder = new QueryBuilder(Category.find(), query);
 
     const events = queryBuilder
-      .search(["name"])
+      .search(categorySearchableField)
       .filter()
       .sort()
       .fields()
@@ -93,9 +95,13 @@ export const categoryServices = {
       throw new AppError(StatusCodes.NOT_FOUND, "Category Not Found!!");
     }
 
-
-
-    const deleteCategory = await Category.findByIdAndDelete(categoryId);
+    const deleteCategory = await Category.findByIdAndUpdate(
+      categoryId,
+      {
+        isDeleted: true,
+      },
+      { new: true },
+    );
 
     return deleteCategory;
   },

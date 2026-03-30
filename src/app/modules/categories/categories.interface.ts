@@ -7,6 +7,7 @@ export interface ICategory {
   slug: string;
   description?: string;
   isActive: boolean;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

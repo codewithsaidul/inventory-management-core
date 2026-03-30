@@ -43,4 +43,4 @@ router.delete(
   productControllers.deleteProduct,
 );
 
-export const ProductRooutes = router;
+export const ProductRoutes = router;

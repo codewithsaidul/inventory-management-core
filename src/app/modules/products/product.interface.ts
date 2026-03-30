@@ -13,6 +13,7 @@ export interface IProduct {
   stock: number;
   minThreshold: number;
   status: ProductStatus;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

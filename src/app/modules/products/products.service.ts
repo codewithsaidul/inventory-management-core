@@ -8,6 +8,15 @@ import { slugifyUnique } from "../../utils/generateSlug";
 
 export const productServices = {
   createProduct: async (payload: IProduct) => {
+    const productName = payload.name.trim().toLowerCase();
+    const isProductExist = await Product.findOne({ name: productName });
+
+    if (isProductExist) {
+      throw new AppError(
+        StatusCodes.CONFLICT,
+        "This product already exist! try another one",
+      );
+    }
     const uniqueSlug = await slugifyUnique(
       [payload.name as string],
       Product,
@@ -87,7 +96,9 @@ export const productServices = {
       throw new AppError(StatusCodes.NOT_FOUND, "Product not found!");
     }
 
-    const deleteProduct = await Product.findByIdAndDelete(productId);
+    const deleteProduct = await Product.findByIdAndUpdate(productId, {
+      isDeleted: true
+    }, { new: true });
 
     return deleteProduct;
   },
