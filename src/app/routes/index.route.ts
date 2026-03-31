@@ -5,6 +5,7 @@ import { CategoryRoutes } from "../modules/categories/categories.route";
 import { ProductRoutes } from "../modules/products/product.route";
 import { OrderRoutes } from "../modules/order/order.route";
 import { ActivitiTrackingRoutes } from "../modules/activitiTracking/activitiTracking.route";
+import { RestockQueueRoutes } from "../modules/restock/restock.route";
 
 
 export const router = Router();
@@ -31,8 +32,12 @@ const modulesRoute = [
     route: OrderRoutes
   },
   {
-    path: "/activitiTracking",
+    path: "/activitiTrackings",
     route: ActivitiTrackingRoutes
+  },
+  {
+    path: "/restock-queues",
+    route: RestockQueueRoutes
   },
 ];
 
