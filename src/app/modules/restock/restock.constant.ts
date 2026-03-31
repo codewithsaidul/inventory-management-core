@@ -1,4 +1,4 @@
 
 
 
-export const restockSearchableField = ["product.name"];
+export const restockSearchableField = ["priority"];

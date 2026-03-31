@@ -76,7 +76,7 @@ export const orderServices = {
 
       payload.orderHistory = [
         {
-          status: payload.status,
+          status: OrderStatus.PENDING,
           changedAt: new Date(),
           changedBy: new Types.ObjectId(userId),
           note: "Order created",
@@ -168,7 +168,7 @@ export const orderServices = {
     const queryBuilder = new QueryBuilder(initialQuery.find(filter), restQuery);
 
     const events = queryBuilder
-      .search(["name"])
+      .search(["customerName"])
       .filter()
       .sort()
       .fields()

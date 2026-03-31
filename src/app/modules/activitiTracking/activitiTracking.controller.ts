@@ -14,8 +14,8 @@ export const activitiTrackingController = {
 
       sendResponse(res, {
         success: true,
-        statusCode: StatusCodes.CREATED,
-        message: "Product created successfully!",
+        statusCode: StatusCodes.OK,
+        message: "Activity Logs retrived successfully!",
         data,
         meta,
       });

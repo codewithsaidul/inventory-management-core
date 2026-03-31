@@ -11,4 +11,10 @@ router.get(
   restockController.getAllRestockQueues,
 );
 
+router.patch(
+  "/:id/restock-item",
+  checkAuth(UserRole.SUPERADMIN),
+  restockController.restockItem,
+);
+
 export const RestockQueueRoutes = router;

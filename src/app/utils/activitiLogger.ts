@@ -7,7 +7,7 @@ export const logActivity = async (
   {
     category,
     message,
-    performedBy,
+    performedBy = "System",
     metadata,
   }: {
     category: ActionCategory;

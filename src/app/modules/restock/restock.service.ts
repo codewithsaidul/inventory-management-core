@@ -9,7 +9,7 @@ import { ProductStatus } from "../products/product.interface";
 
 export const restockServices = {
   getAllRestockQueues: async (query: Record<string, string>) => {
-    const queryBuilder = new QueryBuilder(RestockQueue.find(), query);
+    const queryBuilder = new QueryBuilder(RestockQueue.find({ isResolved: false }), query);
 
     const events = queryBuilder
       .search(restockSearchableField)
@@ -32,6 +32,7 @@ export const restockServices = {
     id: string,
     payload: { addedStock: number },
     userId: string,
+    userName: string,
   ) => {
     const session = await RestockQueue.startSession();
 
@@ -71,7 +72,7 @@ export const restockServices = {
 
       await logActivity(
         {
-          message: `Product ${product.name} restocked by ${payload.addedStock}`,
+          message: `Product ${product.name} restocked by ${userName || 'System'}`,
           category: ActionCategory.STOCK,
           performedBy: userId,
           metadata: {

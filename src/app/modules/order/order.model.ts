@@ -26,7 +26,16 @@ const OrderHistorySchema = new Schema<IOrderHistory>(
 
 const OrderSchema = new Schema<IOrder>(
   {
-    orderId: { type: String, required: true, unique: true },
+    orderId: {
+      type: String,
+      unique: true,
+      validate: {
+        validator: function (v: string) {
+          return typeof v === "string" && v.length > 0;
+        },
+        message: "Order ID must be generated before saving."
+      },
+    },
     customerName: { type: String, required: true, trim: true },
     items: [OrderItemSchema],
     totalPrice: { type: Number, required: true, default: 0 },

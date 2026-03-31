@@ -32,7 +32,7 @@ const modulesRoute = [
     route: OrderRoutes
   },
   {
-    path: "/activitiTrackings",
+    path: "/activitiLogs",
     route: ActivitiTrackingRoutes
   },
   {
