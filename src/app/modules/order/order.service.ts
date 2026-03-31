@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { startSession } from "mongoose";
+import { startSession, Types } from "mongoose";
 import { AppError } from "../../errorHelpers/AppError";
 import { QueryBuilder } from "../../utils/queryBuilder";
 import { ProductStatus } from "../products/product.interface";
@@ -9,7 +9,7 @@ import { Order } from "./order.model";
 import { isValidStatusTransition } from "./order.statusValidation";
 
 export const orderServices = {
-  createOrder: async (payload: IOrder) => {
+  createOrder: async (payload: IOrder, userId: string) => {
     const session = await startSession();
 
     try {
@@ -39,7 +39,7 @@ export const orderServices = {
         const product = await Product.findById(productId).session(session);
 
         // 3. Checking the product existence
-        if (!product || product.status === "Out of Stock") {
+        if (!product || product.status === ProductStatus.OUT_OF_STOCK) {
           throw new Error(
             `"${product?.name || "Product"}" is currently unavailable.`,
           );
@@ -70,6 +70,15 @@ export const orderServices = {
 
       payload.totalPrice = totalOrderPrice;
 
+      payload.orderHistory = [
+        {
+          status: payload.status,
+          changedAt: new Date(),
+          changedBy: new Types.ObjectId(userId),
+          note: "Order created",
+        },
+      ];
+
       const result = await Order.create([payload], { session });
 
       if (lowStockProducts.length > 0) {
@@ -78,9 +87,9 @@ export const orderServices = {
 
       await session.commitTransaction();
       return result[0];
-    } catch {
+    } catch (err) {
       await session.abortTransaction();
-      throw Error;
+      throw err;
     } finally {
       session.endSession();
     }
@@ -117,6 +126,19 @@ export const orderServices = {
     ]);
 
     return { data, meta };
+  },
+
+  getOrderDetails: async (orderId: string) => {
+    const orderDetails = await Order.findById(orderId).populate(
+      "items.product",
+      "name price",
+    );
+
+    if (!orderDetails) {
+      throw new AppError(StatusCodes.NOT_FOUND, "This order does not exist");
+    }
+
+    return orderDetails;
   },
 
   updateOrderStatus: async (orderId: string, newStatus: OrderStatus) => {

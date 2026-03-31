@@ -4,11 +4,13 @@ import { TNext, TRequest, TResponse } from "../../types/global";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { orderServices } from "./order.service";
+import { JwtPayload } from "jsonwebtoken";
 
 export const orderControllers = {
   createOrder: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const result = await orderServices.createOrder(req.body);
+      const { userId } = req.user as JwtPayload;
+      const result = await orderServices.createOrder(req.body, userId);
 
       sendResponse(res, {
         success: true,
@@ -31,6 +33,21 @@ export const orderControllers = {
         message: "All orders retrieved successfully!",
         data,
         meta,
+      });
+    },
+  ),
+
+  getOrderDetails: catchAsync(
+    async (req: TRequest, res: TResponse, next: TNext) => {
+      const { id } = req.params;
+
+      const result = await orderServices.getOrderDetails(id);
+
+      sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: "Order details retrived successfully!",
+        data: result,
       });
     },
   ),

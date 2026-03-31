@@ -23,6 +23,13 @@ router.get(
 );
 
 
+router.get(
+  "/:id",
+  checkAuth(UserRole.SUPERADMIN),
+  orderControllers.getOrderDetails,
+);
+
+
 router.patch(
   "/:id/status",
   checkAuth(UserRole.SUPERADMIN),
