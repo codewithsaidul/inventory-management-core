@@ -1,7 +1,9 @@
 import { StatusCodes } from "http-status-codes";
 import { startSession, Types } from "mongoose";
 import { AppError } from "../../errorHelpers/AppError";
+import { logActivity } from "../../utils/activitiLogger";
 import { QueryBuilder } from "../../utils/queryBuilder";
+import { ActionCategory } from "../activitiTracking/activitiTracking.interface";
 import { ProductStatus } from "../products/product.interface";
 import { Product } from "../products/product.model";
 import { IOrder, IOrderFillter, OrderStatus } from "./order.interface";
@@ -9,7 +11,7 @@ import { Order } from "./order.model";
 import { isValidStatusTransition } from "./order.statusValidation";
 
 export const orderServices = {
-  createOrder: async (payload: IOrder, userId: string) => {
+  createOrder: async (payload: IOrder, userId: string, userName: string) => {
     const session = await startSession();
 
     try {
@@ -79,14 +81,26 @@ export const orderServices = {
         },
       ];
 
-      const result = await Order.create([payload], { session });
+      const [newOrder] = await Order.create([payload], { session });
+
+      await logActivity(
+        {
+          category: ActionCategory.ORDER,
+          message: `Order #${newOrder.orderId} created by ${userName}`,
+          performedBy: userName,
+          metadata: {
+            orderId: newOrder._id,
+          },
+        },
+        session,
+      );
 
       if (lowStockProducts.length > 0) {
         console.log("🚀 ~ lowStockProducts:", lowStockProducts);
       }
 
       await session.commitTransaction();
-      return result[0];
+      return newOrder;
     } catch (err) {
       await session.abortTransaction();
       throw err;
@@ -141,47 +155,120 @@ export const orderServices = {
     return orderDetails;
   },
 
-  updateOrderStatus: async (orderId: string, newStatus: OrderStatus) => {
-    const isOrderExist = await Order.findById(orderId);
+  updateOrderStatus: async (
+    orderId: string,
+    newStatus: OrderStatus,
+    userName: string,
+  ) => {
+    const session = await startSession();
+    session.startTransaction();
 
-    if (!isOrderExist) {
-      throw new AppError(StatusCodes.NOT_FOUND, "This order does not exist");
-    }
+    try {
+      const isOrderExist = await Order.findById(orderId).session(session);
 
-    const isValidTransitionsStatus = isValidStatusTransition(
-      isOrderExist.status,
-      newStatus,
-    );
+      if (!isOrderExist) {
+        throw new AppError(StatusCodes.NOT_FOUND, "This order does not exist");
+      }
 
-    if (!isValidTransitionsStatus) {
-      throw new AppError(
-        StatusCodes.BAD_REQUEST,
-        `Invalid status transition from "${isOrderExist.status}" to "${newStatus}"`,
+      const isValidTransitionsStatus = isValidStatusTransition(
+        isOrderExist.status,
+        newStatus,
       );
+
+      if (!isValidTransitionsStatus) {
+        throw new AppError(
+          StatusCodes.BAD_REQUEST,
+          `Invalid status transition from "${isOrderExist.status}" to "${newStatus}"`,
+        );
+      }
+
+      const previousStatus = isOrderExist.status;
+
+      const updatedOrder = await Order.findByIdAndUpdate(
+        orderId,
+        { status: newStatus },
+        { new: true, runValidators: true, session },
+      );
+
+      if (!updatedOrder) {
+        throw new AppError(
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Failed to update status",
+        );
+      }
+
+      await logActivity(
+        {
+          category: ActionCategory.ORDER,
+          message: `Order #${updatedOrder.orderId} status changed from ${previousStatus} to ${newStatus}`,
+          performedBy: userName,
+          metadata: {
+            orderId: updatedOrder._id,
+            previousValue: previousStatus as string,
+            newValue: newStatus as string,
+          },
+        },
+        session,
+      );
+
+      await session.commitTransaction();
+      return updatedOrder;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
     }
-
-    const updatedOrderStatus = await Order.findByIdAndUpdate(
-      orderId,
-      { status: newStatus },
-      { new: true, runValidators: true },
-    );
-
-    return updatedOrderStatus;
   },
 
-  deleteOrder: async (orderId: string) => {
-    const isOrderExist = await Order.findById(orderId);
+  deleteOrder: async (orderId: string, userName: string) => {
+    const session = await startSession();
+    session.startTransaction();
 
-    if (!isOrderExist) {
-      throw new AppError(StatusCodes.NOT_FOUND, "This order does not exist");
+    try {
+      const isOrderExist = await Order.findById(orderId).session(session);
+
+      if (!isOrderExist) {
+        throw new AppError(StatusCodes.NOT_FOUND, "This order does not exist");
+      }
+
+      if (isOrderExist.isDeleted) {
+        throw new AppError(StatusCodes.BAD_REQUEST, "Order is already deleted");
+      }
+
+      const deletedOrder = await Order.findByIdAndUpdate(
+        orderId,
+        { isDeleted: true },
+        { new: true, session },
+      );
+
+      if (!deletedOrder) {
+        throw new AppError(
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Failed to delete order",
+        );
+      }
+
+      await logActivity(
+        {
+          category: ActionCategory.ORDER,
+          message: `Order #${deletedOrder.orderId} was deleted by ${userName}`,
+          performedBy: userName,
+          metadata: {
+            orderId: deletedOrder._id,
+          },
+        },
+        session,
+      );
+
+      await session.commitTransaction();
+
+      return deletedOrder;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
     }
-
-    const deletedOrder = await Order.findByIdAndUpdate(
-      orderId,
-      { isDeleted: true },
-      { new: true },
-    );
-
-    return deletedOrder;
   },
 };

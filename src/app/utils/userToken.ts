@@ -1,32 +1,31 @@
 import { StatusCodes } from "http-status-codes";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../config/env";
 import { AppError } from "../errorHelpers/AppError";
-import { generateToken } from "./jwt";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { IUser, UserStatus } from "../modules/user/user.interface";
 import { User } from "../modules/user/user.model";
-
-
+import { generateToken } from "./jwt";
 
 export const createUserToken = (user: Partial<IUser>) => {
   const jwtPayload = {
     userId: user._id,
     email: user.email,
     role: user.role,
+    name: user.name,
   };
 
   // genrate access tokens
   const accessToken = generateToken(
     jwtPayload,
     envVars.JWT.JWT_ACCESS_SECRET,
-    envVars.JWT.JWT_ACCESS_EXPIRATION_TIME
+    envVars.JWT.JWT_ACCESS_EXPIRATION_TIME,
   );
 
   // genrate  refresh tokens
   const refreshToken = generateToken(
     jwtPayload,
     envVars.JWT.JWT_REFRESH_SECRET,
-    envVars.JWT.JWT_REFRESH_EXPIRATION_TIME
+    envVars.JWT.JWT_REFRESH_EXPIRATION_TIME,
   );
 
   return {
@@ -35,14 +34,13 @@ export const createUserToken = (user: Partial<IUser>) => {
   };
 };
 
-
 export const createAccessTokenWithRefreshToken = async (
-  refreshToken: string
+  refreshToken: string,
 ) => {
   // verify the refresh token
   const verifyrefreshToken = jwt.verify(
     refreshToken,
-    envVars.JWT.JWT_REFRESH_SECRET
+    envVars.JWT.JWT_REFRESH_SECRET,
   ) as JwtPayload;
 
   const isUserExist = await User.findOne({ email: verifyrefreshToken.email });
@@ -56,7 +54,7 @@ export const createAccessTokenWithRefreshToken = async (
   if (isUserExist.status === UserStatus.BLOCKED) {
     throw new AppError(
       StatusCodes.FORBIDDEN,
-      `User is ${isUserExist.status}, please contact our support team.`
+      `User is ${isUserExist.status}, please contact our support team.`,
     );
   }
 
@@ -65,8 +63,6 @@ export const createAccessTokenWithRefreshToken = async (
     throw new AppError(StatusCodes.FORBIDDEN, "User is deleted.");
   }
 
-
-  
   // create jwt payload
   const jwtPayload = {
     userId: isUserExist._id,
@@ -78,7 +74,7 @@ export const createAccessTokenWithRefreshToken = async (
   const accessToken = generateToken(
     jwtPayload,
     envVars.JWT.JWT_ACCESS_SECRET,
-    envVars.JWT.JWT_ACCESS_EXPIRATION_TIME
+    envVars.JWT.JWT_ACCESS_EXPIRATION_TIME,
   );
 
   return accessToken;

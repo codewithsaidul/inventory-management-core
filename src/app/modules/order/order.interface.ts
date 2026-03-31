@@ -21,6 +21,7 @@ export interface IOrderHistory {
 }
 
 export interface IOrder {
+  orderId: string;
   customerName: string;
   items: IOrderItem[];
   totalPrice: number;

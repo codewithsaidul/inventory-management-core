@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { IOrder, IOrderHistory, OrderStatus } from "./order.interface";
+import { generateOrderId } from "../../utils/generateOrderId";
 
 const OrderItemSchema = new Schema(
   {
@@ -25,6 +26,7 @@ const OrderHistorySchema = new Schema<IOrderHistory>(
 
 const OrderSchema = new Schema<IOrder>(
   {
+    orderId: { type: String, required: true, unique: true },
     customerName: { type: String, required: true, trim: true },
     items: [OrderItemSchema],
     totalPrice: { type: Number, required: true, default: 0 },
@@ -38,5 +40,12 @@ const OrderSchema = new Schema<IOrder>(
   },
   { timestamps: true, versionKey: false },
 );
+
+OrderSchema.pre("save", async function (next) {
+  if (!this.orderId) {
+    this.orderId = await generateOrderId();
+  }
+  next();
+});
 
 export const Order = model<IOrder>("Order", OrderSchema);
