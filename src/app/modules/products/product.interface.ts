@@ -6,6 +6,7 @@ export enum ProductStatus {
 }
 
 export interface IProduct {
+  _id?: string;
   name: string;
   slug: string;
   category: Types.ObjectId;

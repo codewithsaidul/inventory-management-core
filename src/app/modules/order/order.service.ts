@@ -4,11 +4,13 @@ import { AppError } from "../../errorHelpers/AppError";
 import { logActivity } from "../../utils/activitiLogger";
 import { QueryBuilder } from "../../utils/queryBuilder";
 import { ActionCategory } from "../activitiTracking/activitiTracking.interface";
-import { ProductStatus } from "../products/product.interface";
+import { IProduct, ProductStatus } from "../products/product.interface";
 import { Product } from "../products/product.model";
 import { IOrder, IOrderFillter, OrderStatus } from "./order.interface";
 import { Order } from "./order.model";
 import { isValidStatusTransition } from "./order.statusValidation";
+import { calculatePriority } from "../../utils/calculateRestockPriority";
+import { RestockQueue } from "../restock/restock.model";
 
 export const orderServices = {
   createOrder: async (payload: IOrder, userId: string, userName: string) => {
@@ -19,7 +21,7 @@ export const orderServices = {
       session.startTransaction();
 
       let totalOrderPrice = 0;
-      const lowStockProducts: string[] = [];
+      const lowStockProducts: IProduct[] = [];
       const selectedProductsIds = new Set<string>();
 
       // 1. Loop through each item in the order to validate product availability and stock
@@ -63,7 +65,7 @@ export const orderServices = {
 
         // 6. Check if the product stock is below the minimum threshold and add it to the low stock products list
         if (product.stock <= product.minThreshold) {
-          lowStockProducts.push(product.name);
+          lowStockProducts.push(product);
         }
 
         // 7. Calculate the total price for the order
@@ -96,7 +98,46 @@ export const orderServices = {
       );
 
       if (lowStockProducts.length > 0) {
-        console.log("🚀 ~ lowStockProducts:", lowStockProducts);
+        const bulkOps = lowStockProducts.map((product) => {
+          const priority = calculatePriority(
+            product.stock,
+            product.minThreshold,
+          );
+
+          return {
+            updateOne: {
+              filter: { product: product._id },
+              update: {
+                $set: {
+                  product: product._id,
+                  currentStock: product.stock,
+                  threshold: product.minThreshold,
+                  priority,
+                  isResolved: false,
+                },
+              },
+              upsert: true,
+            },
+          };
+        });
+
+        await RestockQueue.bulkWrite(bulkOps);
+
+        for (const product of lowStockProducts) {
+          await logActivity(
+            {
+              message: `Product ${product.name} added in Restock Queue`,
+              category: ActionCategory.STOCK,
+              performedBy: userId,
+              metadata: {
+                productId: new Types.ObjectId(product._id),
+                newValue: `Stock is ${product.stock}`,
+                previousValue: `Threshold is ${product.minThreshold}`,
+              },
+            },
+            session,
+          );
+        }
       }
 
       await session.commitTransaction();
