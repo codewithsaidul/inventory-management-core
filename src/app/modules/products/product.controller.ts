@@ -4,11 +4,13 @@ import { TNext, TRequest, TResponse } from "../../types/global";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { productServices } from "./products.service";
+import { JwtPayload } from "jsonwebtoken";
 
 export const productControllers = {
   createProduct: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const result = await productServices.createProduct(req.body);
+      const { name } = req.user as JwtPayload;
+      const result = await productServices.createProduct(req.body, name);
 
       sendResponse(res, {
         success: true,
@@ -52,9 +54,11 @@ export const productControllers = {
 
   updateProduct: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
+      const { name } = req.user as JwtPayload;
       const result = await productServices.updateProduct(
         req.params.id as string,
         req.body,
+        name,
       );
 
       sendResponse(res, {
@@ -68,8 +72,10 @@ export const productControllers = {
 
   deleteProduct: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
+      const { name } = req.user as JwtPayload;
       const result = await productServices.deleteProduct(
         req.params.id as string,
+        name,
       );
 
       sendResponse(res, {

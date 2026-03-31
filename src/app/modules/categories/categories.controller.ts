@@ -5,11 +5,13 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { categoryServices } from "./categories.service";
 import { updateCategorySchema } from "./categories.validation";
+import { JwtPayload } from "jsonwebtoken";
 
 export const categoryControllers = {
   createCategory: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const result = await categoryServices.createCategory(req.body);
+      const { name } = req.user as JwtPayload;
+      const result = await categoryServices.createCategory(req.body, name);
 
       sendResponse(res, {
         success: true,
@@ -53,9 +55,11 @@ export const categoryControllers = {
 
   updateCategory: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
+      const { name } = req.user as JwtPayload;
       const result = await categoryServices.updateCategory(
         req.params.id as string,
         req.body,
+        name,
       );
 
       sendResponse(res, {
@@ -69,8 +73,10 @@ export const categoryControllers = {
 
   deleteCategory: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
+      const { name } = req.user as JwtPayload;
       const result = await categoryServices.deleteCategory(
         req.params.id as string,
+        name,
       );
 
       sendResponse(res, {

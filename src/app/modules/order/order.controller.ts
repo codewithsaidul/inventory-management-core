@@ -9,8 +9,8 @@ import { JwtPayload } from "jsonwebtoken";
 export const orderControllers = {
   createOrder: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const { userId } = req.user as JwtPayload;
-      const result = await orderServices.createOrder(req.body, userId);
+      const { userId, name } = req.user as JwtPayload;
+      const result = await orderServices.createOrder(req.body, userId, name);
 
       sendResponse(res, {
         success: true,
@@ -56,8 +56,9 @@ export const orderControllers = {
     async (req: TRequest, res: TResponse, next: TNext) => {
       const { id } = req.params;
       const { status } = req.body;
+      const { name } = req.user as JwtPayload
 
-      const result = await orderServices.updateOrderStatus(id, status);
+      const result = await orderServices.updateOrderStatus(id, status, name);
 
       sendResponse(res, {
         success: true,
@@ -70,7 +71,8 @@ export const orderControllers = {
 
   deleteOrder: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const result = await orderServices.deleteOrder(req.params.id as string);
+      const { name } = req.user as JwtPayload
+      const result = await orderServices.deleteOrder(req.params.id as string, name);
 
       sendResponse(res, {
         success: true,
