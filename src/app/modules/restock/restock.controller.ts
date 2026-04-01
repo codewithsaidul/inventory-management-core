@@ -9,7 +9,9 @@ import { JwtPayload } from "jsonwebtoken";
 export const restockController = {
   getAllRestockQueues: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const result = await restockServices.getAllRestockQueues(req.query as Record<string, string>);
+      const result = await restockServices.getAllRestockQueues(
+        req.query as Record<string, string>,
+      );
 
       sendResponse(res, {
         success: true,
@@ -20,11 +22,15 @@ export const restockController = {
     },
   ),
 
-
   restockItem: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const { userId, name } = req.user as JwtPayload
-      const result = await restockServices.restockItem(req.params.id, req.body, userId, name);
+      const { userId, name } = req.user as JwtPayload;
+      const result = await restockServices.restockItem(
+        req.params.id as string,
+        req.body,
+        userId as string,
+        name as string,
+      );
 
       sendResponse(res, {
         success: true,
