@@ -100,18 +100,18 @@ export const orderServices = {
       if (lowStockProducts.length > 0) {
         const bulkOps = lowStockProducts.map((product) => {
           const priority = calculatePriority(
-            product.stock,
-            product.minThreshold,
+            product?.stock,
+            product?.minThreshold,
           );
 
           return {
             updateOne: {
-              filter: { product: product._id },
+              filter: { product: new Types.ObjectId(product._id) },
               update: {
                 $set: {
-                  product: product._id,
-                  currentStock: product.stock,
-                  threshold: product.minThreshold,
+                  product: new Types.ObjectId(product._id),
+                  currentStock: product?.stock,
+                  threshold: product?.minThreshold,
                   priority,
                   isResolved: false,
                 },

@@ -5,6 +5,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { orderServices } from "./order.service";
 import { JwtPayload } from "jsonwebtoken";
+import { OrderStatus } from "./order.interface";
 
 export const orderControllers = {
   createOrder: catchAsync(
@@ -41,7 +42,7 @@ export const orderControllers = {
     async (req: TRequest, res: TResponse, next: TNext) => {
       const { id } = req.params;
 
-      const result = await orderServices.getOrderDetails(id);
+      const result = await orderServices.getOrderDetails(id as string);
 
       sendResponse(res, {
         success: true,
@@ -56,9 +57,13 @@ export const orderControllers = {
     async (req: TRequest, res: TResponse, next: TNext) => {
       const { id } = req.params;
       const { status } = req.body;
-      const { name } = req.user as JwtPayload
+      const { name } = req.user as JwtPayload;
 
-      const result = await orderServices.updateOrderStatus(id, status, name);
+      const result = await orderServices.updateOrderStatus(
+        id as string,
+        status as OrderStatus,
+        name as string,
+      );
 
       sendResponse(res, {
         success: true,
@@ -71,8 +76,11 @@ export const orderControllers = {
 
   deleteOrder: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const { name } = req.user as JwtPayload
-      const result = await orderServices.deleteOrder(req.params.id as string, name);
+      const { name } = req.user as JwtPayload;
+      const result = await orderServices.deleteOrder(
+        req.params.id as string,
+        name,
+      );
 
       sendResponse(res, {
         success: true,
