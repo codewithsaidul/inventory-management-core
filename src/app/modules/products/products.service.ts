@@ -82,7 +82,10 @@ export const productServices = {
   },
 
   getAllProducts: async (query: Record<string, string>) => {
-    const queryBuilder = new QueryBuilder(Product.find({ isDeleted: false }), query);
+    const queryBuilder = new QueryBuilder(
+      Product.find({ isDeleted: false }),
+      query,
+    );
 
     const events = queryBuilder
       .search(productSearchableField)
