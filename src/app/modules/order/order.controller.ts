@@ -57,12 +57,13 @@ export const orderControllers = {
     async (req: TRequest, res: TResponse, next: TNext) => {
       const { id } = req.params;
       const { status } = req.body;
-      const { name } = req.user as JwtPayload;
+      const { name, userId } = req.user as JwtPayload;
 
       const result = await orderServices.updateOrderStatus(
         id as string,
         status as OrderStatus,
         name as string,
+        userId as string
       );
 
       sendResponse(res, {

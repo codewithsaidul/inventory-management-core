@@ -185,6 +185,14 @@ export const categoryServices = {
         );
       }
 
+
+      if (category.availableProducts > 0) {
+        throw new AppError(
+          StatusCodes.BAD_REQUEST,
+          "Cannot delete category with available products!",
+        );
+      }
+
       // 2. Perform Soft Delete
       const deletedCategory = await Category.findByIdAndUpdate(
         categoryId,

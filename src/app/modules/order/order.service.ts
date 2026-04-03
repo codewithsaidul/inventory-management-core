@@ -2,15 +2,15 @@ import { StatusCodes } from "http-status-codes";
 import { startSession, Types } from "mongoose";
 import { AppError } from "../../errorHelpers/AppError";
 import { logActivity } from "../../utils/activitiLogger";
+import { calculatePriority } from "../../utils/calculateRestockPriority";
 import { QueryBuilder } from "../../utils/queryBuilder";
 import { ActionCategory } from "../activitiTracking/activitiTracking.interface";
 import { IProduct, ProductStatus } from "../products/product.interface";
 import { Product } from "../products/product.model";
+import { RestockQueue } from "../restock/restock.model";
 import { IOrder, IOrderFillter, OrderStatus } from "./order.interface";
 import { Order } from "./order.model";
 import { isValidStatusTransition } from "./order.statusValidation";
-import { calculatePriority } from "../../utils/calculateRestockPriority";
-import { RestockQueue } from "../restock/restock.model";
 
 export const orderServices = {
   createOrder: async (payload: IOrder, userId: string, userName: string) => {
@@ -154,7 +154,7 @@ export const orderServices = {
     const { date, ...restQuery } = query;
 
     const initialQuery = Order.find();
-    const filter: IOrderFillter = {};
+    const filter: IOrderFillter = { isDeleted: false };
 
     if (date) {
       const start = new Date(date);
@@ -168,7 +168,7 @@ export const orderServices = {
     const queryBuilder = new QueryBuilder(initialQuery.find(filter), restQuery);
 
     const events = queryBuilder
-      .search(["customerName"])
+      .search(["customerName", "orderId"])
       .filter()
       .sort()
       .fields()
@@ -200,6 +200,7 @@ export const orderServices = {
     orderId: string,
     newStatus: OrderStatus,
     userName: string,
+    userId: string,
   ) => {
     const session = await startSession();
     session.startTransaction();
@@ -225,9 +226,19 @@ export const orderServices = {
 
       const previousStatus = isOrderExist.status;
 
+      const historyUpdate = {
+        status: newStatus,
+        changedAt: new Date(),
+        changedBy: new Types.ObjectId(userId),
+        note: `Order status changed from ${previousStatus} to ${newStatus}`,
+      };
+
       const updatedOrder = await Order.findByIdAndUpdate(
         orderId,
-        { status: newStatus },
+        {
+          $set: { status: newStatus },
+          $push: { orderHistory: historyUpdate },
+        },
         { new: true, runValidators: true, session },
       );
 

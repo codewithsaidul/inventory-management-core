@@ -226,6 +226,8 @@ export const productServices = {
         );
       }
 
+      
+
       const deletedProduct = await Product.findByIdAndUpdate(
         productId,
         { isDeleted: true },

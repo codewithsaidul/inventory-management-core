@@ -33,6 +33,13 @@ export interface IOrder {
 }
 
 export interface IOrderFillter {
+  isDeleted: boolean;
   status?: OrderStatus;
   createdAt?: Date | { $gte: Date; $lte: Date };
+}
+
+
+export interface IUpdateOrderStatus {
+  status: OrderStatus;
+  orderHistory: IOrderHistory[];
 }
