@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { checkAuth } from "../../middleware/checkAuth";
-import { UserRole } from "../user/user.interface";
 import { validateRequest } from "../../middleware/validateRequest";
-import { createCategorySchema, updateCategorySchema } from "./categories.validation";
+import { UserRole } from "../user/user.interface";
 import { categoryControllers } from "./categories.controller";
+import {
+  createCategorySchema,
+  updateCategorySchema,
+} from "./categories.validation";
 
 const router = Router();
 
@@ -14,21 +17,24 @@ router.post(
   categoryControllers.createCategory,
 );
 
-
 router.get(
   "/",
   checkAuth(UserRole.SUPERADMIN),
-  categoryControllers.getAllCateogry,
+  categoryControllers.getAllCategory,
 );
 
+
+router.get(
+  "/active",
+  checkAuth(UserRole.SUPERADMIN),
+  categoryControllers.getAllActiveCategory,
+);
 
 router.get(
   "/:slug",
   checkAuth(UserRole.SUPERADMIN),
   categoryControllers.getSingleCategory,
 );
-
-
 
 router.patch(
   "/:id",
@@ -37,12 +43,10 @@ router.patch(
   categoryControllers.updateCategory,
 );
 
-
 router.delete(
   "/:id",
   checkAuth(UserRole.SUPERADMIN),
   categoryControllers.deleteCategory,
 );
 
-
-export const CategoryRoutes = router
+export const CategoryRoutes = router;

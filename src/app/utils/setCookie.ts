@@ -1,3 +1,4 @@
+import { envVars } from "../config/env";
 import { TResponse } from "../types/global";
 
 interface AuthToken {
@@ -5,13 +6,16 @@ interface AuthToken {
   refreshToken?: string;
 }
 
+
+const isProd = envVars.NODE_ENV === "production";
+
 export const setAuthCookie = (res: TResponse, tokenInfo: AuthToken) => {
   // Set cookies for access tokens
   if (tokenInfo.accessToken) {
     res.cookie("accessToken", tokenInfo.accessToken, {
       httpOnly: true, // Safer from XSS
-      secure: true, // O
-      sameSite: "lax",
+      secure: isProd,       // secure only in production
+      sameSite: isProd ? "none" : "lax",
       maxAge: 3 * 24 * 60 * 60 * 1000 // 3 days expire date
     });
   }
@@ -20,8 +24,8 @@ export const setAuthCookie = (res: TResponse, tokenInfo: AuthToken) => {
   if (tokenInfo.refreshToken) {
     res.cookie("refreshToken", tokenInfo.refreshToken, {
       httpOnly: true,  // Safer from XSS
-      secure: true,
-      sameSite: "lax",
+      secure: isProd,       // secure only in production
+      sameSite: isProd ? "none" : "lax",
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days expire date
     });
   }

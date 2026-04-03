@@ -5,6 +5,7 @@ import { logActivity } from "../../utils/activitiLogger";
 import { slugifyUnique } from "../../utils/generateSlug";
 import { QueryBuilder } from "../../utils/queryBuilder";
 import { ActionCategory } from "../activitiTracking/activitiTracking.interface";
+import { Category } from "../categories/categories.model";
 import { productSearchableField } from "./product.constant";
 import { IProduct } from "./product.interface";
 import { Product } from "./product.model";
@@ -60,6 +61,15 @@ export const productServices = {
         session,
       );
 
+      // Update category availableProducts
+      if (product.stock > 0) {
+        await Category.findByIdAndUpdate(
+          product.category,
+          { $inc: { availableProducts: 1 } },
+          { session },
+        );
+      }
+
       await session.commitTransaction();
 
       return product;
@@ -72,7 +82,7 @@ export const productServices = {
   },
 
   getAllProducts: async (query: Record<string, string>) => {
-    const queryBuilder = new QueryBuilder(Product.find(), query);
+    const queryBuilder = new QueryBuilder(Product.find({ isDeleted: false }), query);
 
     const events = queryBuilder
       .search(productSearchableField)
@@ -152,6 +162,40 @@ export const productServices = {
         session,
       );
 
+      // Update category availableProducts
+      const newStock = updatedProduct?.stock || 0;
+      if ((oldStock <= 0 && newStock > 0) || (oldStock > 0 && newStock <= 0)) {
+        const incValue = oldStock <= 0 && newStock > 0 ? 1 : -1;
+        await Category.findByIdAndUpdate(
+          product.category,
+          { $inc: { availableProducts: incValue } },
+          { session },
+        );
+      }
+
+      // Handle category change
+      if (
+        updatedProduct &&
+        product.category.toString() !== updatedProduct.category.toString()
+      ) {
+        // Decrement old category if old stock > 0
+        if (oldStock > 0) {
+          await Category.findByIdAndUpdate(
+            product.category,
+            { $inc: { availableProducts: -1 } },
+            { session },
+          );
+        }
+        // Increment new category if new stock > 0
+        if (newStock > 0) {
+          await Category.findByIdAndUpdate(
+            updatedProduct.category,
+            { $inc: { availableProducts: 1 } },
+            { session },
+          );
+        }
+      }
+
       await session.commitTransaction();
       return updatedProduct;
     } catch (error) {
@@ -196,6 +240,15 @@ export const productServices = {
         },
         session,
       );
+
+      // Update category availableProducts
+      if (product.isDeleted) {
+        await Category.findByIdAndUpdate(
+          product.category,
+          { $inc: { availableProducts: -1 } },
+          { session },
+        );
+      }
 
       await session.commitTransaction();
       return deletedProduct;

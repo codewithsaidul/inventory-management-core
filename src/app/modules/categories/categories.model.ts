@@ -8,7 +8,7 @@ const CategorySchema = new Schema<ICategory>(
       required: [true, "Category name is required"],
       unique: true,
       trim: true,
-      owercase: true,
+      lowercase: true,
     },
     slug: {
       type: String,
@@ -19,6 +19,10 @@ const CategorySchema = new Schema<ICategory>(
     description: {
       type: String,
       maxlength: [200, "Description cannot be more than 200 characters"],
+    },
+    availableProducts: {
+      type: Number,
+      default: 0,
     },
     isActive: {
       type: Boolean,

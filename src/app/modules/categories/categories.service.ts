@@ -88,6 +88,24 @@ export const categoryServices = {
     return { data, meta };
   },
 
+  getAllActiveCategory: async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(Category.find({ isActive: true}).select("_id name"), query);
+
+    const events = queryBuilder
+      .search(categorySearchableField)
+      .filter()
+      .sort()
+      .fields()
+      .paginate();
+
+    const [data, meta] = await Promise.all([
+      events.build(),
+      queryBuilder.getMeta(),
+    ]);
+
+    return { data, meta };
+  },
+
   getSingleCategory: async (slug: string) => {
     const category = await Category.findOne({ slug });
 
