@@ -53,7 +53,7 @@ export const categoryServices = {
           message: `New Category "${category.name}" was created by ${userName}`,
           performedBy: userName,
           metadata: {
-            categoryId: category._id,
+            category: category._id,
           },
         },
         session,
@@ -151,7 +151,7 @@ export const categoryServices = {
           message: `Category "${category.name}" was updated by ${userName}`,
           performedBy: userName,
           metadata: {
-            categoryId: category._id,
+            category: category._id,
           },
         },
         session,
@@ -206,7 +206,7 @@ export const categoryServices = {
           message: `Category "${category.name}" was deleted by ${userName}`,
           performedBy: userName,
           metadata: {
-            categoryId: category._id,
+            category: category._id,
           },
         },
         session,

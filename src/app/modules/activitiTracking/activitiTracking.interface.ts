@@ -10,9 +10,9 @@ export enum ActionCategory {
 
 
 export interface IActivitiMetaData {
-    orderId?: Types.ObjectId;
-    productId?: Types.ObjectId;
-    categoryId?: Types.ObjectId;
+    order?: Types.ObjectId;
+    product?: Types.ObjectId;
+    category?: Types.ObjectId;
     previousValue?: string;
     newValue?: string;
 }

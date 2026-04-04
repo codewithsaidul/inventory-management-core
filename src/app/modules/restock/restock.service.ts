@@ -76,7 +76,7 @@ export const restockServices = {
           category: ActionCategory.STOCK,
           performedBy: userId,
           metadata: {
-            productId: new Types.ObjectId(product._id),
+            product: new Types.ObjectId(product._id),
             newValue: `Stock increased by ${payload.addedStock}`,
             previousValue: `Stock was ${product.stock - payload.addedStock}`,
           },

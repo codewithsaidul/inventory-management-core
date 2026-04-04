@@ -9,7 +9,7 @@ import { JwtPayload } from "jsonwebtoken";
 export const restockController = {
   getAllRestockQueues: catchAsync(
     async (req: TRequest, res: TResponse, next: TNext) => {
-      const result = await restockServices.getAllRestockQueues(
+      const { data, meta} = await restockServices.getAllRestockQueues(
         req.query as Record<string, string>,
       );
 
@@ -17,7 +17,8 @@ export const restockController = {
         success: true,
         statusCode: StatusCodes.OK,
         message: "Restock Queues retrived successfully!",
-        data: result,
+        data,
+        meta
       });
     },
   ),

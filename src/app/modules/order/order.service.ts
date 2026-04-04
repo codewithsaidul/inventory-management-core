@@ -91,7 +91,7 @@ export const orderServices = {
           message: `Order #${newOrder.orderId} created by ${userName}`,
           performedBy: userName,
           metadata: {
-            orderId: newOrder._id,
+            order: newOrder._id,
           },
         },
         session,
@@ -130,7 +130,7 @@ export const orderServices = {
               category: ActionCategory.STOCK,
               performedBy: userId,
               metadata: {
-                productId: new Types.ObjectId(product._id),
+                product: new Types.ObjectId(product._id),
                 newValue: `Stock is ${product.stock}`,
                 previousValue: `Threshold is ${product.minThreshold}`,
               },
@@ -255,7 +255,7 @@ export const orderServices = {
           message: `Order #${updatedOrder.orderId} status changed from ${previousStatus} to ${newStatus}`,
           performedBy: userName,
           metadata: {
-            orderId: updatedOrder._id,
+            order: updatedOrder._id,
             previousValue: previousStatus as string,
             newValue: newStatus as string,
           },
@@ -307,7 +307,7 @@ export const orderServices = {
           message: `Order #${deletedOrder.orderId} was deleted by ${userName}`,
           performedBy: userName,
           metadata: {
-            orderId: deletedOrder._id,
+            order: deletedOrder._id,
           },
         },
         session,

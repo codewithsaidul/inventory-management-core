@@ -54,7 +54,7 @@ export const productServices = {
           message: `Product "${product.name}" was added to the inventory by ${userName}`,
           performedBy: userName,
           metadata: {
-            productId: new Types.ObjectId(product._id),
+            product: new Types.ObjectId(product._id),
             newValue: product.stock.toString(),
           },
         },
@@ -157,7 +157,7 @@ export const productServices = {
           message: `Product "${updatedProduct?.name}" was updated by ${userName}`,
           performedBy: userName,
           metadata: {
-            productId: new Types.ObjectId(updatedProduct?._id),
+            product: new Types.ObjectId(updatedProduct?._id),
             previousValue: oldStock.toString(),
             newValue: updatedProduct?.stock.toString(),
           },
@@ -240,7 +240,7 @@ export const productServices = {
           message: `Product "${product.name}" was marked as deleted by ${userName}`,
           performedBy: userName,
           metadata: {
-            productId: new Types.ObjectId(product._id),
+            product: new Types.ObjectId(product._id),
           },
         },
         session,

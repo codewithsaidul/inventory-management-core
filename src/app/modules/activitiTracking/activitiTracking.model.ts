@@ -6,15 +6,15 @@ import {
 } from "./activitiTracking.interface";
 
 const ActivitiMetaDataSchema = new Schema<IActivitiMetaData>({
-  orderId: {
+  order: {
     type: Schema.Types.ObjectId,
     ref: "Order",
   },
-  productId: {
+  product: {
     type: Schema.Types.ObjectId,
     ref: "Product",
   },
-  categoryId: {
+  category: {
     type: Schema.Types.ObjectId,
     ref: "Category",
   },

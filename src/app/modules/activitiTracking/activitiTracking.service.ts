@@ -3,7 +3,7 @@ import { ActivitiLog } from "./activitiTracking.model";
 
 export const activitiTrackingServices = {
   getAllActivities: async (query: Record<string, string>) => {
-    const queryBuilder = new QueryBuilder(ActivitiLog.find(), query);
+    const queryBuilder = new QueryBuilder(ActivitiLog.find(), { ...query, sort: "-timestamp"});
 
     const events = queryBuilder
       .search(["category", "message", "performedBy"])
@@ -11,9 +11,9 @@ export const activitiTrackingServices = {
       .sort()
       .fields()
       .paginate()
-      .populate("metadata.productId", "name")
-      .populate("metadata.categoryId", "name")
-      .populate("metadata.orderId", "orderNumber");
+      .populate("metadata.product", "name")
+      .populate("metadata.category", "name")
+      .populate("metadata.order", "orderId customerName");
 
     const [data, meta] = await Promise.all([
       events.build(),
